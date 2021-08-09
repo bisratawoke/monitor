@@ -80,10 +80,10 @@ func auth(r * http.Request) (err error) {
 
 
 //access log handler
-func accessLogHandler(w http.ResponseWriter, r * http.Request) {
+func monthlyRequestStatusHandler(w http.ResponseWriter, r * http.Request) {
 	
 	
-		err := auth(r)	
+		/*err := auth(r)	
 	
 		if err != nil {
 		
@@ -91,9 +91,9 @@ func accessLogHandler(w http.ResponseWriter, r * http.Request) {
 			
 			return
 		}
+		*/
 		
-		
-		data,err := src.ReadFile(os.Args[1])
+		data,err := src.MonthlyRequestReport("./nginx_logs")
 		
 		if err != nil {
 		
@@ -103,6 +103,10 @@ func accessLogHandler(w http.ResponseWriter, r * http.Request) {
 		}
 		
 		w.Header().Add("Content-Type","application/json")
+		
+		w.Header().Add("Access-Control-Allow-Origin","*")
+		
+		w.Header().Set("Access-Control-Allow-Headers","Authorization")
 		
 		fmt.Fprintf(w,data)
 		
@@ -153,12 +157,51 @@ func errorLogHandler(w http.ResponseWriter, r * http.Request) {
 
 }
 
+//monthlyUserStatusHandler
+
+func monthlyUserStatusHandler(w http.ResponseWriter, r * http.Request) {
+
+	/*err := auth(r)
+		
+		if err != nil {
+		
+			http.Error(w,err.Error(),400)
+			
+			return
+	}
+	*/
+	
+	data,err := src.MonthlyUserBaseStatusReport("./nginx_logs")
+	
+	if err != nil {
+	
+		panic(err)
+		
+		http.Error(w,err.Error(),500)
+		
+		return 
+	
+	}
+		w.Header().Add("Content-Type","application/json")
+		
+		w.Header().Add("Access-Control-Allow-Origin","*")
+		
+		w.Header().Set("Access-Control-Allow-Headers","Authorization")
+		
+	
+	fmt.Fprintf(w,string(data))
+		
+
+}
+
 
 // main function
 func main () { 
 
 
-	http.HandleFunc("/logs/access",accessLogHandler)
+	http.HandleFunc("/status/monthlyReq",monthlyRequestStatusHandler)
+	
+	http.HandleFunc("/status/monthlyUser",monthlyUserStatusHandler)
 	
 	http.HandleFunc("/logs/error",errorLogHandler)
 	
